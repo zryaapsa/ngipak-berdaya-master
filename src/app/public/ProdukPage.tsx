@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { listDusun, listProduk } from "../../features/umkm/api";
-import type { Dusun, Produk, UmkmInfo, UmkmKategori } from "../../features/umkm/types";
+import type {
+  Dusun,
+  Produk,
+  UmkmInfo,
+  UmkmKategori,
+} from "../../features/umkm/types";
 
 import { formatRupiah } from "../../lib/format";
 import { getShopStatus } from "../../lib/status";
@@ -17,7 +22,7 @@ import SectionHeader from "../../components/ui/SectionHeader";
 import StatTile from "../../components/ui/StatTile";
 
 type KategoriOrAll = UmkmKategori | "all";
-type ViewMode = "grid" | "list";
+type ViewMode = "list" | "grid";
 
 const kategoriUI: { value: KategoriOrAll; label: string }[] = [
   { value: "all", label: "Semua Kategori" },
@@ -65,7 +70,7 @@ function Pill({
 }) {
   const cls =
     tone === "brand"
-      ? "border-brand-100 bg-brand-50 text-brand-900"
+      ? "border-white/20 bg-white/10 text-white"
       : "border-gray-200 bg-gray-50 text-gray-700";
 
   return (
@@ -84,226 +89,72 @@ function kategoriLabel(k: KategoriOrAll) {
   return kategoriUI.find((x) => x.value === k)?.label ?? String(k);
 }
 
-function ViewToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
+function ViewToggle({
+  value,
+  onChange,
+}: {
+  value: ViewMode;
+  onChange: (v: ViewMode) => void;
+}) {
   const base =
-    "h-10 rounded-xl px-3 text-sm font-semibold ring-1 ring-inset transition focus:outline-none focus:ring-2 focus:ring-brand-100";
+    "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-100";
+  const on = "bg-brand-50 text-brand-900 ring-1 ring-brand-100";
+  const off = "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50";
+
   return (
-    <div className="inline-flex rounded-2xl bg-gray-50 p-1 ring-1 ring-gray-200">
-      <button
-        type="button"
-        onClick={() => onChange("grid")}
-        className={[
-          base,
-          value === "grid"
-            ? "bg-white text-gray-900 ring-gray-200 shadow-sm"
-            : "bg-transparent text-gray-600 ring-transparent hover:text-gray-900",
-        ].join(" ")}
-        aria-pressed={value === "grid"}
-      >
-        Grid
-      </button>
+    <div className="inline-flex rounded-2xl bg-white p-1 ring-1 ring-gray-200">
       <button
         type="button"
         onClick={() => onChange("list")}
-        className={[
-          base,
-          value === "list"
-            ? "bg-white text-gray-900 ring-gray-200 shadow-sm"
-            : "bg-transparent text-gray-600 ring-transparent hover:text-gray-900",
-        ].join(" ")}
+        className={[base, value === "list" ? on : off].join(" ")}
         aria-pressed={value === "list"}
       >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M8 6h13M8 12h13M8 18h13"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M3 6h.01M3 12h.01M3 18h.01"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </svg>
         List
       </button>
+
+      <button
+        type="button"
+        onClick={() => onChange("grid")}
+        className={[base, value === "grid" ? on : off].join(" ")}
+        aria-pressed={value === "grid"}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Grid
+      </button>
     </div>
-  );
-}
-
-function StatusChip({ label, color }: { label: string; color: "green" | "red" | "gray" }) {
-  const cls =
-    color === "green"
-      ? "bg-green-600"
-      : color === "red"
-        ? "bg-red-600"
-        : "bg-gray-700";
-  return (
-    <span className={["rounded-full px-2.5 py-1 text-xs font-semibold text-white", cls].join(" ")}>
-      {label}
-    </span>
-  );
-}
-
-/** CARD: GRID (2 kolom di HP) */
-function UmkmCardGrid({
-  umkm,
-  produk,
-}: {
-  umkm: UmkmInfo;
-  produk: Produk[];
-}) {
-  const gallery = pickGallery(umkm, produk);
-  const unggulan = pickUnggulan(umkm, produk);
-  const st = getShopStatus(umkm.jam_buka);
-
-  return (
-    <Link to={`/umkm/${umkm.id}`} className="group">
-      <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-soft transition group-hover:-translate-y-0.5 group-hover:shadow-[0_14px_35px_rgba(2,6,23,0.12)]">
-        {/* media */}
-        <div className="relative aspect-[4/3] bg-gray-100">
-          <Carousel images={gallery} alt={umkm.nama} className="h-full w-full" />
-
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-            <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-brand-900 ring-1 ring-black/5 backdrop-blur">
-              {umkm.kategori.toUpperCase()}
-            </span>
-            <span className="rounded-full bg-brand-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-soft">
-              {umkm.dusun.nama}
-            </span>
-          </div>
-
-          <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-2">
-            <StatusChip label={st.label} color={st.color} />
-            {umkm.estimasi ? (
-              <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
-                ⏱ {umkm.estimasi}
-              </span>
-            ) : null}
-          </div>
-        </div>
-
-        {/* body */}
-        <div className="p-4">
-          <div className="min-w-0">
-            <div className="text-base font-semibold text-gray-900 line-clamp-1">{umkm.nama}</div>
-            <div className="mt-1 text-sm text-gray-600 line-clamp-1">
-              {umkm.alamat ?? `Dusun ${umkm.dusun.nama}, Gunungkidul`}
-            </div>
-            <p className="mt-2 text-sm text-gray-700 line-clamp-2">
-              {umkm.tentang ?? "Deskripsi belum tersedia."}
-            </p>
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-2 text-xs">
-            {umkm.layanan?.includes("cod") ? <Pill>COD</Pill> : null}
-            {umkm.layanan?.includes("antar") ? <Pill>Antar</Pill> : null}
-            {umkm.layanan?.includes("ambil") ? <Pill>Ambil</Pill> : null}
-          </div>
-
-          {/* unggulan ringkas */}
-          <div className="mt-3 grid gap-2">
-            {unggulan.slice(0, 1).map((p) => (
-              <div key={p.id} className="rounded-2xl border border-gray-100 bg-gray-50 px-3 py-2">
-                <div className="text-xs font-semibold text-gray-900 line-clamp-1">{p.nama}</div>
-                <div className="mt-0.5 text-sm font-semibold text-brand-900">
-                  {formatRupiah(p.harga)}
-                  {p.satuan ? <span className="text-gray-500"> / {p.satuan}</span> : null}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4">
-            <div className="h-11 w-full rounded-2xl bg-brand-800 text-center text-sm font-semibold text-white leading-[2.75rem] transition group-hover:bg-brand-900">
-              Lihat & Pesan
-            </div>
-            <div className="mt-2 text-center text-[11px] text-gray-500">Detail UMKM • WA & QR</div>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/** CARD: LIST (desktop enak, seperti versi awal) */
-function UmkmCardList({ umkm, produk }: { umkm: UmkmInfo; produk: Produk[] }) {
-  const gallery = pickGallery(umkm, produk);
-  const unggulan = pickUnggulan(umkm, produk);
-  const st = getShopStatus(umkm.jam_buka);
-
-  const statusCls =
-    st.color === "green" ? "bg-green-600" : st.color === "red" ? "bg-red-600" : "bg-gray-700";
-
-  return (
-    <Card className="overflow-hidden">
-      <div className="grid lg:grid-cols-[360px_1fr]">
-        {/* Media */}
-        <div className="relative h-64 bg-gray-100 lg:h-full">
-          <Carousel images={gallery} alt={umkm.nama} className="h-full w-full" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-            <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-brand-900 ring-1 ring-black/5 backdrop-blur">
-              {umkm.kategori.toUpperCase()}
-            </span>
-            <span className="rounded-full bg-brand-800 px-2.5 py-1 text-xs font-medium text-white shadow-soft">
-              {umkm.dusun.nama}
-            </span>
-          </div>
-
-          <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold text-white ${statusCls}`}>
-              {st.label}
-            </span>
-            {umkm.estimasi ? (
-              <span className="rounded-full bg-black/35 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
-                ⏱ {umkm.estimasi}
-              </span>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-gray-900">{umkm.nama}</h2>
-              <div className="mt-1 text-sm text-gray-600">
-                {umkm.alamat ?? `Dusun ${umkm.dusun.nama}, Gunungkidul`}
-              </div>
-
-              <p className="mt-3 text-sm text-gray-700 line-clamp-2">
-                {umkm.tentang ?? "Deskripsi belum tersedia."}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                {umkm.layanan?.includes("cod") ? <Pill>COD</Pill> : null}
-                {umkm.layanan?.includes("antar") ? <Pill>Antar</Pill> : null}
-                {umkm.layanan?.includes("ambil") ? <Pill>Ambil</Pill> : null}
-                {umkm.pembayaran?.length ? <Pill>Bayar: {umkm.pembayaran.join(", ")}</Pill> : null}
-                {umkm.jam_buka ? <Pill>🕒 {umkm.jam_buka}</Pill> : null}
-              </div>
-
-              <div className="mt-5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Produk unggulan
-                </div>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  {unggulan.map((p) => (
-                    <div key={p.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
-                      <div className="text-sm font-semibold text-gray-900 line-clamp-1">{p.nama}</div>
-                      <div className="mt-1 text-sm font-semibold text-brand-900">
-                        {formatRupiah(p.harga)}
-                        {p.satuan ? <span className="text-gray-500"> / {p.satuan}</span> : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* CTA */}
-            <div className="shrink-0 sm:text-right">
-              <Link to={`/umkm/${umkm.id}`}>
-                <Button className="w-full sm:w-auto">Lihat & Pesan</Button>
-              </Link>
-              <div className="mt-2 text-xs text-gray-500">Detail UMKM • WA & QR</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
   );
 }
 
@@ -311,12 +162,11 @@ export default function ProdukPage() {
   const [dusunId, setDusunId] = useState<string>("all");
   const [kategori, setKategori] = useState<KategoriOrAll>("all");
   const [q, setQ] = useState("");
+  const [view, setView] = useState<ViewMode>("list");
 
   const [dusunList, setDusunList] = useState<Dusun[]>([]);
   const [produkList, setProdukList] = useState<Produk[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [view, setView] = useState<ViewMode>("grid");
 
   const PAGE_SIZE = 8;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -340,7 +190,10 @@ export default function ProdukPage() {
   }, []);
 
   const dusunOptions = useMemo(
-    () => [{ value: "all", label: "Semua Dusun" }, ...dusunList.map((d) => ({ value: d.id, label: d.nama }))],
+    () => [
+      { value: "all", label: "Semua Dusun" },
+      ...dusunList.map((d) => ({ value: d.id, label: d.nama })),
+    ],
     [dusunList],
   );
 
@@ -350,7 +203,8 @@ export default function ProdukPage() {
       const okDusun = dusunId === "all" ? true : p.umkm.dusun.id === dusunId;
       const okKat = kategori === "all" ? true : p.umkm.kategori === kategori;
 
-      const hay = `${p.nama} ${p.umkm.nama} ${p.umkm.dusun.nama} ${p.deskripsi ?? ""}`.toLowerCase();
+      const hay =
+        `${p.nama} ${p.umkm.nama} ${p.umkm.dusun.nama} ${p.deskripsi ?? ""}`.toLowerCase();
       const okQ = query === "" ? true : hay.includes(query);
 
       return okDusun && okKat && okQ;
@@ -358,9 +212,12 @@ export default function ProdukPage() {
   }, [dusunId, kategori, q, produkList]);
 
   const umkmAll = useMemo(() => groupByUmkm(filteredProduk), [filteredProduk]);
-  const umkmShown = useMemo(() => umkmAll.slice(0, visibleCount), [umkmAll, visibleCount]);
+  const umkmShown = useMemo(
+    () => umkmAll.slice(0, visibleCount),
+    [umkmAll, visibleCount],
+  );
 
-  useEffect(() => setVisibleCount(PAGE_SIZE), [dusunId, kategori, q, view]);
+  useEffect(() => setVisibleCount(PAGE_SIZE), [dusunId, kategori, q]);
 
   const reset = () => {
     setDusunId("all");
@@ -378,8 +235,11 @@ export default function ProdukPage() {
   const totalProduk = produkList.length;
   const totalUmkm = useMemo(() => groupByUmkm(produkList).length, [produkList]);
 
-  const activeDusunLabel = dusunOptions.find((x) => x.value === dusunId)?.label ?? "Semua Dusun";
-  const showActive = dusunId !== "all" || kategori !== "all" || q.trim().length > 0;
+  const activeDusunLabel =
+    dusunOptions.find((x) => x.value === dusunId)?.label ?? "Semua Dusun";
+
+  const showActive =
+    dusunId !== "all" || kategori !== "all" || q.trim().length > 0;
 
   if (loading) {
     return (
@@ -404,7 +264,7 @@ export default function ProdukPage() {
 
   return (
     <div className="space-y-6">
-      {/* HERO */}
+      {/* HERO (clean) */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 to-brand-900 p-6 text-white shadow-soft">
         <div className="pointer-events-none absolute inset-0 bg-radial-glow" />
         <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-60" />
@@ -412,24 +272,17 @@ export default function ProdukPage() {
 
         <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <h1 className="text-2xl font-semibold tracking-tight">Direktori UMKM Desa Ngipak</h1>
-            <p className="mt-2 text-white/80">Cari UMKM dan produk, lalu pesan langsung via WhatsApp.</p>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-white/75">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              UMKM Desa Ngipak
+            </h1>
+            <p className="mt-2 text-white/80">
+              Cari UMKM dan produk, lalu pesan langsung via WhatsApp.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone="brand">Langsung ke penjual</Pill>
-              <Pill tone="brand">Mobile-friendly</Pill>
+              <Pill tone="brand">Mudah diakses</Pill>
               <Pill tone="brand">WA & QR</Pill>
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <ViewToggle value={view} onChange={setView} />
-
-            <Button variant="secondary" onClick={reset}>
-              Reset
-            </Button>
-            <Link to="/tentang">
-              <Button variant="secondary">Tentang</Button>
-            </Link>
           </div>
         </div>
 
@@ -441,26 +294,49 @@ export default function ProdukPage() {
         </div>
       </div>
 
-      {/* FILTER */}
+      {/* FILTER + TOGGLE (seperti lampiran ke-2) */}
       <Card className="p-5">
         <SectionHeader
           title="Cari UMKM"
           desc="Gunakan filter untuk mempercepat pencarian."
-          right={<Badge variant="neutral">{umkmAll.length} UMKM</Badge>}
+          right={
+            <div className="flex items-center gap-3">
+              <Badge variant="neutral">{umkmAll.length} UMKM</Badge>
+              <ViewToggle value={view} onChange={setView} />
+            </div>
+          }
         />
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <FilterSelect label="Dusun" value={dusunId} options={dusunOptions} onChange={setDusunId} />
-          <FilterSelect label="Kategori" value={kategori} options={kategoriUI} onChange={onKategoriChange} />
-          <SearchInput label="" placeholder="Cari UMKM / produk..." value={q} onChange={setQ} />
+          <FilterSelect
+            label="Dusun"
+            value={dusunId}
+            options={dusunOptions}
+            onChange={setDusunId}
+          />
+          <FilterSelect
+            label="Kategori"
+            value={kategori}
+            options={kategoriUI}
+            onChange={onKategoriChange}
+          />
+          <SearchInput
+            label=""
+            placeholder="Cari UMKM / produk..."
+            value={q}
+            onChange={setQ}
+          />
         </div>
 
         {showActive ? (
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-gray-700">Filter aktif:</span>
-
+            <span className="text-xs font-semibold text-gray-700">
+              Filter aktif:
+            </span>
             {dusunId !== "all" ? <Pill>Dusun: {activeDusunLabel}</Pill> : null}
-            {kategori !== "all" ? <Pill>Kategori: {kategoriLabel(kategori)}</Pill> : null}
+            {kategori !== "all" ? (
+              <Pill>Kategori: {kategoriLabel(kategori)}</Pill>
+            ) : null}
             {q.trim() ? <Pill>Cari: “{q.trim()}”</Pill> : null}
 
             <button
@@ -473,57 +349,255 @@ export default function ProdukPage() {
           </div>
         ) : (
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-600">
-            <Pill>Tips: ketik “keripik”, “jamu”, “laundry”</Pill>
-            <Pill>Filter dusun untuk warga lokal</Pill>
+            <Pill>Tips: ketik kata “keripik”</Pill>
+            <Pill>Gunakan dusun untuk warga lokal</Pill>
           </div>
         )}
       </Card>
 
-      {/* LIST/GRID */}
+      {/* LIST / GRID */}
+      {view === "list" ? (
+        <div className="space-y-4">
+          {umkmShown.map(({ umkm, produk }) => {
+            const gallery = pickGallery(umkm, produk);
+            const unggulan = pickUnggulan(umkm, produk);
+            const st = getShopStatus(umkm.jam_buka);
+
+            const statusCls =
+              st.color === "green"
+                ? "bg-green-600"
+                : st.color === "red"
+                  ? "bg-red-600"
+                  : "bg-gray-700";
+
+            return (
+              <Card key={umkm.id} className="overflow-hidden">
+                <div className="grid lg:grid-cols-[340px_1fr]">
+                  <div className="relative h-60 bg-gray-100 lg:h-full">
+                    <Carousel
+                      images={gallery}
+                      alt={umkm.nama}
+                      className="h-full w-full"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+                    <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-brand-900 ring-1 ring-black/5 backdrop-blur">
+                        {umkm.kategori.toUpperCase()}
+                      </span>
+                      <span className="rounded-full bg-brand-800 px-2.5 py-1 text-xs font-medium text-white shadow-soft">
+                        {umkm.dusun.nama}
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-2">
+                      <span
+                        className={[
+                          "rounded-full px-2.5 py-1 text-xs font-semibold text-white",
+                          statusCls,
+                        ].join(" ")}
+                      >
+                        {st.label}
+                      </span>
+                      {umkm.estimasi ? (
+                        <span className="rounded-full bg-black/35 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
+                          ⏱ {umkm.estimasi}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          {umkm.nama}
+                        </h2>
+                        <div className="mt-1 text-sm text-gray-600">
+                          {umkm.alamat ??
+                            `Dusun ${umkm.dusun.nama}, Gunungkidul`}
+                        </div>
+
+                        <p className="mt-3 text-sm text-gray-700 line-clamp-2">
+                          {umkm.tentang ?? "Deskripsi belum tersedia."}
+                        </p>
+
+                        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                          {umkm.layanan?.includes("cod") ? (
+                            <Pill>COD</Pill>
+                          ) : null}
+                          {umkm.layanan?.includes("antar") ? (
+                            <Pill>Antar</Pill>
+                          ) : null}
+                          {umkm.layanan?.includes("ambil") ? (
+                            <Pill>Ambil</Pill>
+                          ) : null}
+                          {umkm.pembayaran?.length ? (
+                            <Pill>Bayar: {umkm.pembayaran.join(", ")}</Pill>
+                          ) : null}
+                          {umkm.jam_buka ? (
+                            <Pill>🕒 {umkm.jam_buka}</Pill>
+                          ) : null}
+                        </div>
+
+                        <div className="mt-5">
+                          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                            Produk unggulan
+                          </div>
+                          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                            {unggulan.map((p) => (
+                              <div
+                                key={p.id}
+                                className="rounded-xl border border-gray-100 bg-gray-50 p-3"
+                              >
+                                <div className="text-sm font-semibold text-gray-900 line-clamp-1">
+                                  {p.nama}
+                                </div>
+                                <div className="mt-1 text-sm font-semibold text-brand-900">
+                                  {formatRupiah(p.harga)}
+                                  {p.satuan ? (
+                                    <span className="text-gray-500">
+                                      {" "}
+                                      / {p.satuan}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 sm:text-right">
+                        <Link to={`/umkm/${umkm.id}`}>
+                          <Button className="w-full sm:w-auto">
+                            Lihat & Pesan
+                          </Button>
+                        </Link>
+                        <div className="mt-2 text-xs text-gray-500">
+                          Detail UMKM • WA & QR
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {umkmShown.map(({ umkm, produk }) => {
+            const gallery = pickGallery(umkm, produk);
+            const unggulan = pickUnggulan(umkm, produk);
+            const st = getShopStatus(umkm.jam_buka);
+
+            const statusCls =
+              st.color === "green"
+                ? "bg-green-600"
+                : st.color === "red"
+                  ? "bg-red-600"
+                  : "bg-gray-700";
+
+            return (
+              <Card key={umkm.id} className="overflow-hidden">
+                <div className="relative aspect-[4/3] bg-gray-100">
+                  {/* grid: tetap pakai carousel biar konsisten dengan list */}
+                  <Carousel
+                    images={gallery}
+                    alt={umkm.nama}
+                    className="h-full w-full"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+
+                  <div className="absolute left-2 top-2 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-brand-900 ring-1 ring-black/5 backdrop-blur">
+                      {umkm.kategori.toUpperCase()}
+                    </span>
+                    <span className="rounded-full bg-brand-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-soft">
+                      {umkm.dusun.nama}
+                    </span>
+                  </div>
+
+                  <div className="absolute bottom-2 left-2 flex flex-wrap items-center gap-2">
+                    <span
+                      className={[
+                        "rounded-full px-2.5 py-1 text-[11px] font-semibold text-white",
+                        statusCls,
+                      ].join(" ")}
+                    >
+                      {st.label}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <div className="text-sm font-semibold text-gray-900 line-clamp-1">
+                    {umkm.nama}
+                  </div>
+                  <div className="mt-1 text-xs text-gray-600 line-clamp-1">
+                    {umkm.alamat ?? `Dusun ${umkm.dusun.nama}, Gunungkidul`}
+                  </div>
+
+                  <div className="mt-3 grid gap-2">
+                    {unggulan.slice(0, 1).map((p) => (
+                      <div
+                        key={p.id}
+                        className="rounded-xl border border-gray-100 bg-gray-50 p-2.5"
+                      >
+                        <div className="text-xs font-semibold text-gray-900 line-clamp-1">
+                          {p.nama}
+                        </div>
+                        <div className="mt-1 text-xs font-semibold text-brand-900">
+                          {formatRupiah(p.harga)}
+                          {p.satuan ? (
+                            <span className="text-gray-500"> / {p.satuan}</span>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3">
+                    <Link to={`/umkm/${umkm.id}`}>
+                      <Button className="h-11 w-full">Pesan</Button>
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* empty state */}
       {umkmAll.length === 0 ? (
         <Card className="p-8 text-center">
-          <div className="text-lg font-semibold text-gray-900">Tidak ada hasil</div>
-          <div className="mt-1 text-sm text-gray-600">Coba ubah filter/kata kunci atau reset.</div>
+          <div className="text-lg font-semibold text-gray-900">
+            Tidak ada hasil
+          </div>
+          <div className="mt-1 text-sm text-gray-600">
+            Coba ubah filter/kata kunci atau reset.
+          </div>
           <div className="mt-4 flex justify-center">
             <Button variant="secondary" onClick={reset}>
               Reset
             </Button>
           </div>
         </Card>
-      ) : view === "grid" ? (
-        <>
-          {/* grid: mobile 2 kolom */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3">
-            {umkmShown.map(({ umkm, produk }) => (
-              <UmkmCardGrid key={umkm.id} umkm={umkm} produk={produk} />
-            ))}
-          </div>
+      ) : null}
 
-          {umkmAll.length > umkmShown.length ? (
-            <div className="flex justify-center pt-2">
-              <Button variant="secondary" onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}>
-                Tampilkan lebih banyak
-              </Button>
-            </div>
-          ) : null}
-        </>
-      ) : (
-        <>
-          <div className="space-y-4">
-            {umkmShown.map(({ umkm, produk }) => (
-              <UmkmCardList key={umkm.id} umkm={umkm} produk={produk} />
-            ))}
-          </div>
-
-          {umkmAll.length > umkmShown.length ? (
-            <div className="flex justify-center pt-2">
-              <Button variant="secondary" onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}>
-                Tampilkan lebih banyak
-              </Button>
-            </div>
-          ) : null}
-        </>
-      )}
+      {/* load more */}
+      {umkmAll.length > umkmShown.length ? (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="secondary"
+            onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+          >
+            Tampilkan lebih banyak
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
