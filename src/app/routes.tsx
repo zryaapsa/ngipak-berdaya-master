@@ -6,7 +6,7 @@ import ProdukPage from "./public/ProdukPage";
 import UmkmDetailPage from "./public/UmkmDetailPage";
 import KesehatanPage from "./public/KesehatanPage";
 import TentangPage from "./public/TentangPage";
-import NotFoundPage from "./NotFoundPage";
+import NotFoundPage from "./NotfoundPage";
 
 import LoginPage from "./admin/LoginPage";
 import DashboardPage from "./admin/DashboardPage";
