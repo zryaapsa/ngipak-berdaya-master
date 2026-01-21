@@ -1,0 +1,14 @@
+<svg width="100" height="100" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer outline ONLY (white). Inside stays like original -->
+  <rect x="40" y="40" width="180" height="180" rx="44" fill="#0F172A" stroke="#FFFFFF" stroke-width="8"></rect>
+  <rect x="56" y="56" width="148" height="148" rx="36" fill="#16A34A"></rect>
+
+  <!-- Box -->
+  <path d="M98 150c0-14 11-25 25-25h46c14 0 25 11 25 25v28c0 14-11 25-25 25h-46c-14 0-25-11-25-25v-28z" fill="#FFFFFF" opacity="0.95"></path>
+  <path d="M123 125l23-16 23 16" stroke="#0F172A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
+
+  <!-- Sprout -->
+  <path d="M146 182v-40" stroke="#0F172A" stroke-width="10" stroke-linecap="round"></path>
+  <path d="M146 146c-18 0-32-14-32-32 18 0 32 14 32 32z" fill="#F97316"></path>
+  <path d="M146 146c18 0 32-14 32-32-18 0-32 14-32 32z" fill="#F97316"></path>
+</svg>
