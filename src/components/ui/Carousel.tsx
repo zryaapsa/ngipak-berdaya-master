@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 
 type Props = {
   images: string[];
@@ -23,6 +23,7 @@ function ArrowIcon({ dir }: { dir: "left" | "right" }) {
 export default function Carousel({ images, alt, className = "" }: Props) {
   const imgs = useMemo(() => images.filter(Boolean).slice(0, 3), [images]);
 
+  // idx boleh "stale", render selalu pakai safeIdx supaya tidak butuh useEffect clamp
   const [idx, setIdx] = useState(0);
   const safeIdx = imgs.length ? ((idx % imgs.length) + imgs.length) % imgs.length : 0;
 
@@ -35,31 +36,48 @@ export default function Carousel({ images, alt, className = "" }: Props) {
   const axisLock = useRef<"x" | "y" | null>(null);
   const widthRef = useRef<number>(1);
 
-  const threshold = 60; // px
+  const threshold = 60; // px swipe threshold
 
-  const prev = () => setIdx((v) => (v - 1 + imgs.length) % imgs.length);
-  const next = () => setIdx((v) => (v + 1) % imgs.length);
+  const prev = () => {
+    const len = imgs.length;
+    if (len <= 1) return;
+    setIdx((v) => ((v - 1) % len + len) % len);
+  };
 
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const next = () => {
+    const len = imgs.length;
+    if (len <= 1) return;
+    setIdx((v) => (v + 1) % len);
+  };
+
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (imgs.length <= 1) return;
+
+    // Jangan mulai drag kalau user klik tombol control/dots
+    const target = e.target as HTMLElement;
+    if (target.closest("button")) return;
+
     const el = e.currentTarget;
     widthRef.current = Math.max(1, el.getBoundingClientRect().width);
 
     startX.current = e.clientX;
     startY.current = e.clientY;
     axisLock.current = null;
+
     setDragging(true);
     setDragX(0);
 
-    // biar tetap dapat pointer events
-    try {
-      el.setPointerCapture(e.pointerId);
-    } catch {
-      // ignore
+    // pointer capture (biar swipe stabil)
+    if (typeof el.setPointerCapture === "function") {
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
     }
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!dragging || imgs.length <= 1) return;
     if (startX.current == null || startY.current == null) return;
 
@@ -71,66 +89,67 @@ export default function Carousel({ images, alt, className = "" }: Props) {
     }
     if (axisLock.current === "y") return; // biarkan scroll vertikal
 
-    // clamp drag supaya tidak terlalu jauh
+    // clamp drag
     const maxDrag = widthRef.current * 0.55;
     const clamped = Math.max(-maxDrag, Math.min(maxDrag, dx));
     setDragX(clamped);
   };
 
-  const endDrag = (e?: React.PointerEvent<HTMLDivElement>) => {
+  const endDrag = (e?: PointerEvent<HTMLDivElement>) => {
     if (!dragging) return;
     setDragging(false);
 
-    // kalau axis y, jangan geser
-    if (axisLock.current === "y") {
-      setDragX(0);
-      return;
+    if (axisLock.current === "x") {
+      if (dragX > threshold) prev();
+      else if (dragX < -threshold) next();
     }
-
-    if (dragX > threshold) prev();
-    else if (dragX < -threshold) next();
 
     setDragX(0);
 
     if (e) {
-      try {
-        e.currentTarget.releasePointerCapture(e.pointerId);
-      } catch {
-        // ignore
+      const el = e.currentTarget;
+      if (typeof el.releasePointerCapture === "function") {
+        try {
+          el.releasePointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
       }
     }
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (imgs.length <= 1) return;
     if (e.key === "ArrowLeft") prev();
     if (e.key === "ArrowRight") next();
   };
 
-  if (!imgs.length) return <div className={`h-full w-full bg-gray-100 ${className}`} />;
+  if (!imgs.length) {
+    return <div className={`h-full w-full bg-gray-100 ${className}`} />;
+  }
 
+  // Controls: selalu tampil di mobile, hover/focus untuk >=sm
   const showUI =
-    "opacity-0 pointer-events-none " +
-    "group-hover:opacity-100 group-hover:pointer-events-auto " +
-    "group-focus-within:opacity-100 group-focus-within:pointer-events-auto " +
-    "group-active:opacity-100 group-active:pointer-events-auto";
+    "opacity-100 pointer-events-auto " +
+    "sm:opacity-0 sm:pointer-events-none " +
+    "sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto " +
+    "sm:group-focus-within:opacity-100 sm:group-focus-within:pointer-events-auto";
 
   const arrowBase = [
     "absolute top-1/2 -translate-y-1/2 z-20",
-    "h-9 w-9 rounded-full",
+    "h-8 w-8 rounded-full",
     "bg-white/85 backdrop-blur",
     "ring-1 ring-black/10 shadow-sm",
     "flex items-center justify-center",
-    "text-gray-800",
+    "text-gray-900",
     "hover:bg-white hover:ring-black/15",
     "active:scale-95 transition",
     "focus:outline-none focus:ring-2 focus:ring-brand-100",
     showUI,
   ].join(" ");
 
-  // slider transform: translate per slide + drag offset
-  const translate = `calc(${-safeIdx * 100}% + ${dragX}px)`;
   const trackCls = dragging ? "transition-none" : "transition-transform duration-300 ease-out";
+  const translate = `calc(${-safeIdx * 100}% + ${dragX}px)`;
 
   return (
     <div
@@ -144,18 +163,17 @@ export default function Carousel({ images, alt, className = "" }: Props) {
       style={{ touchAction: "pan-y" }}
       aria-label="Carousel"
     >
+      {/* overlay gradient (tidak mengganggu click) */}
       <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
 
-      <div
-        className={`flex h-full w-full ${trackCls}`}
-        style={{ transform: `translateX(${translate})` }}
-      >
+      {/* track */}
+      <div className={`flex h-full w-full ${trackCls}`} style={{ transform: `translateX(${translate})` }}>
         {imgs.map((src, i) => (
           <div key={i} className="h-full w-full shrink-0">
             <img
               src={src}
               alt={alt ?? "gambar"}
-              className="h-full w-full object-cover select-none"
+              className="h-full w-full select-none object-cover"
               loading="lazy"
               draggable={false}
             />
@@ -165,21 +183,41 @@ export default function Carousel({ images, alt, className = "" }: Props) {
 
       {imgs.length > 1 ? (
         <>
-          <button type="button" onClick={prev} className={`${arrowBase} left-2`} aria-label="Sebelumnya">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+            className={`${arrowBase} left-2`}
+            aria-label="Sebelumnya"
+          >
             <ArrowIcon dir="left" />
           </button>
 
-          <button type="button" onClick={next} className={`${arrowBase} right-2`} aria-label="Berikutnya">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+            className={`${arrowBase} right-2`}
+            aria-label="Berikutnya"
+          >
             <ArrowIcon dir="right" />
           </button>
 
+          {/* dots */}
           <div className={`absolute bottom-2 left-0 right-0 z-20 flex justify-center ${showUI}`}>
             <div className="flex items-center gap-1.5 rounded-full bg-black/30 px-2 py-1 backdrop-blur">
               {imgs.map((_, i) => (
                 <button
                   key={i}
                   type="button"
-                  onClick={() => setIdx(i)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIdx(i);
+                  }}
                   className={[
                     "h-1.5 w-1.5 rounded-full ring-1 ring-white/25 transition",
                     i === safeIdx ? "bg-white" : "bg-white/45 hover:bg-white/70",
