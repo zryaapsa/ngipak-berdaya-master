@@ -29,7 +29,7 @@ const IMG = {
   KERIPIK_PISANG:
     "https://aimrxyqppgebeqgfneah.supabase.co/storage/v1/object/public/produk/KERIPIK%20PISANG.jpeg",
   SARON:
-    "https://aimrxyqppgebeqgfneah.supabase.co/storage/v1/object/public/produk/GAMELAN.jpg",
+    "https://aimrxyqppgebeqgfneah.supabase.co/storage/v1/object/public/produk/GAMELAN/GAMELAN%20(1).jpg",
   FALLBACK:
     "https://aimrxyqppgebeqgfneah.supabase.co/storage/v1/object/public/produk/3.jpeg",
 } as const;
