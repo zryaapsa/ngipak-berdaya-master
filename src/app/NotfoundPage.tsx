@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
-export default function NotFoundPage() {
+export default function NotfoundPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Card className="p-8">
