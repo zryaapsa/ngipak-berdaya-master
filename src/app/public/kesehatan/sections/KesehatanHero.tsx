@@ -27,6 +27,8 @@ export default function KesehatanHero({
   jadwalCount: number;
   dusunCount: number;
 }) {
+  const hasLeaflet = Boolean(leafletPath && leafletPath.trim());
+
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 to-brand-900 p-6 text-white shadow-soft">
       <div className="pointer-events-none absolute inset-0 bg-radial-glow" />
@@ -39,40 +41,45 @@ export default function KesehatanHero({
             Informasi Kesehatan Desa Ngipak
           </h1>
           <p className="mt-2 text-white/80">
-            Halaman ini membantu warga memahami isu kesehatan, jadwal kegiatan,
-            dan jalur kontak yang tepat.
+            Ringkasan isu kesehatan, tren data, jadwal posyandu, dan kontak kader.
           </p>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <InfoStrip title="Periode data" desc={periodeLabel} />
             <InfoStrip title="Sumber" desc={sumber} />
             <InfoStrip
-              title="Catatan"
-              desc="Data di halaman ini masih contoh (dummy) untuk simulasi."
+              title="Cakupan"
+              desc={`${dusunCount} dusun • ${jadwalCount} jadwal (sesuai filter)`}
             />
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <a href={leafletPath} target="_blank" rel="noreferrer">
-            <Button variant="secondary">Unduh Leaflet Edukasi (PDF)</Button>
-          </a>
+          {hasLeaflet ? (
+            <a href={leafletPath} target="_blank" rel="noreferrer">
+              <Button variant="secondary">Unduh Leaflet Edukasi (PDF)</Button>
+            </a>
+          ) : (
+            <Button variant="secondary" disabled>
+              Leaflet belum tersedia
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="relative mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
-          label="Stunting (data terbaru)"
+          label="Stunting (terbaru)"
           value={latestStunting}
           icon={<span className="text-lg">👶</span>}
         />
         <StatTile
-          label="Tekanan darah tinggi / hipertensi (data terbaru)"
+          label="Hipertensi (terbaru)"
           value={latestHipertensi}
           icon={<span className="text-lg">💓</span>}
         />
         <StatTile
-          label="Jadwal kegiatan (sesuai filter)"
+          label="Jadwal kegiatan"
           value={jadwalCount}
         />
         <StatTile label="Jumlah dusun" value={dusunCount} />

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { listProduk } from "../../../features/umkm/api";
-import type { Produk } from "../../../features/umkm/types";
+import { getUmkmById, listProdukByUmkmId, listUmkm } from "../../../features/umkm/api";
+import type { Produk, UmkmInfo } from "../../../features/umkm/types";
 
 import { formatRupiah } from "../../../lib/format";
 import { toWaLink } from "../../../lib/wa";
@@ -16,46 +16,65 @@ import UmkmMediaAndOrder from "./sections/UmkmMediaAndOrder";
 import UmkmProdukGrid from "./sections/UmkmProdukGrid";
 import UmkmSerupa from "./sections/UmkmSerupa";
 
-import {
-  groupByUmkm,
-  pickGallery,
-  pickSerupa,
-  type UmkmGroup,
-} from "./utils/umkm-detail.utils";
+import { pickGallery, pickSerupa, type UmkmGroup } from "./utils/umkm-detail.utils";
 
 export default function UmkmDetailPage() {
   const { id } = useParams();
   const [selectedProdukId, setSelectedProdukId] = useState<string>("");
 
-  const [produkAll, setProdukAll] = useState<Produk[]>([]);
+  const [umkm, setUmkm] = useState<UmkmInfo | null>(null);
+  const [produk, setProduk] = useState<Produk[]>([]);
+  const [umkmAll, setUmkmAll] = useState<UmkmGroup[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
+
     (async () => {
       try {
         setLoading(true);
-        const p = await listProduk();
+        setSelectedProdukId("");
+
+        if (!id) {
+          setUmkm(null);
+          setProduk([]);
+          setUmkmAll([]);
+          return;
+        }
+
+        // 1) ambil UMKM detail
+        const u = await getUmkmById(String(id));
         if (!alive) return;
-        setProdukAll(p);
+
+        if (!u) {
+          setUmkm(null);
+          setProduk([]);
+          setUmkmAll([]);
+          return;
+        }
+
+        setUmkm(u);
+
+        // 2) ambil produk untuk UMKM ini saja
+        const p = await listProdukByUmkmId(u.id);
+        if (!alive) return;
+        setProduk(p);
+
+        // 3) ambil daftar UMKM untuk rekomendasi serupa
+        //    (lebih ringan daripada fetch semua produk)
+        const all = await listUmkm();
+        if (!alive) return;
+        setUmkmAll(all.map((x) => ({ umkm: x, produk: [] })));
       } finally {
         if (alive) setLoading(false);
       }
     })();
+
     return () => {
       alive = false;
     };
-  }, []);
-
-  const umkmAll = useMemo(() => groupByUmkm(produkAll), [produkAll]);
-
-  const data = useMemo(() => {
-    if (!id) return null;
-    return umkmAll.find((x) => String(x.umkm.id) === String(id)) ?? null;
-  }, [id, umkmAll]);
-
-  const umkm = data?.umkm ?? null;
-  const produk = data?.produk ?? [];
+  }, [id]);
 
   const gallery = useMemo(() => {
     if (!umkm) return [];
@@ -104,7 +123,7 @@ export default function UmkmDetailPage() {
         : "bg-gray-700";
 
   if (loading) return <UmkmSkeleton />;
-  if (!data || !umkm) return <UmkmNotFound />;
+  if (!umkm) return <UmkmNotFound />;
 
   return (
     <div className="space-y-6">

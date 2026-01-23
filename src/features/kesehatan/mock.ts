@@ -6,7 +6,7 @@ import type {
   JadwalKesehatan,
   MetaKesehatan,
   LeafletLink,
-} from "./types";
+} from "./public.types";
 
 export const META_KESEHATAN: MetaKesehatan = {
   periode_terakhir: "2026-01",
@@ -15,7 +15,6 @@ export const META_KESEHATAN: MetaKesehatan = {
 
 export const LEAFLET: { kesehatan: LeafletLink } = {
   kesehatan: {
-    label: "Leaflet Kesehatan (Stunting)",
     path: "/leaflet/leaflet-kesehatan.pdf",
   },
 };
@@ -26,12 +25,16 @@ export const ISU: IsuKesehatan[] = [
     judul: "Stunting",
     ringkas:
       "Fokus 1000 HPK: pemantauan tumbuh kembang, edukasi gizi keluarga, dan dukungan PMT.",
+    prioritas: "tinggi",
     dampak: [
       "Pertumbuhan balita terhambat",
       "Risiko kesehatan jangka panjang meningkat",
     ],
-    upayaDesa: ["Penimbangan dan pengukuran rutin", "PMT balita dan edukasi gizi"],
-    aksiWarga: [
+    upaya_desa: [
+      "Penimbangan dan pengukuran rutin",
+      "PMT balita dan edukasi gizi",
+    ],
+    aksi_warga: [
       "Datang posyandu tiap bulan (BB/TB tercatat)",
       "Cukupi protein hewani sesuai kemampuan",
       "Lengkapi imunisasi dan vitamin",
@@ -42,15 +45,16 @@ export const ISU: IsuKesehatan[] = [
     judul: "Hipertensi",
     ringkas:
       "Kasus tekanan darah tinggi perlu pemantauan rutin, pola makan seimbang, dan aktivitas fisik.",
+    prioritas: "tinggi",
     dampak: [
       "Meningkatkan risiko stroke dan penyakit jantung",
       "Keluhan pusing/lemas berulang terutama pada lansia",
     ],
-    upayaDesa: [
+    upaya_desa: [
       "Cek tensi berkala di posbindu/posyandu lansia",
       "Edukasi diet rendah garam dan berhenti merokok",
     ],
-    aksiWarga: [
+    aksi_warga: [
       "Cek tekanan darah minimal 1x/bulan",
       "Kurangi garam, gorengan, dan rokok",
       "Aktivitas fisik ringan 30 menit/hari",
@@ -61,9 +65,10 @@ export const ISU: IsuKesehatan[] = [
     judul: "Kesehatan Lingkungan",
     ringkas:
       "Kebersihan lingkungan dan pengelolaan air/sampah untuk menurunkan diare/DBD/penyakit kulit.",
+    prioritas: "sedang",
     dampak: ["Diare pada balita", "DBD saat musim hujan"],
-    upayaDesa: ["PSN 3M", "Edukasi cuci tangan", "Kerja bakti lingkungan"],
-    aksiWarga: ["Tutup wadah air", "Buang sampah terpilah", "Cuci tangan pakai sabun"],
+    upaya_desa: ["PSN 3M", "Edukasi cuci tangan", "Kerja bakti lingkungan"],
+    aksi_warga: ["Tutup wadah air", "Buang sampah terpilah", "Cuci tangan pakai sabun"],
   },
 ];
 
@@ -103,8 +108,7 @@ export const JADWAL: JadwalKesehatan[] = [
     dusun: { id: "d3", nama: "Ngipak", slug: "ngipak" },
     kegiatan: "Posyandu Balita",
     tanggal: "2026-01-20",
-    jam_mulai: "08:00",
-    jam_selesai: "10:00",
+    jam: "08:00–10:00",
     lokasi: "Balai Dusun Ngipak",
     catatan: "Bawa KIA & buku kesehatan.",
   },
@@ -113,8 +117,7 @@ export const JADWAL: JadwalKesehatan[] = [
     dusun: { id: "d1", nama: "Kalangan 1", slug: "kalangan-1" },
     kegiatan: "Posbindu Lansia",
     tanggal: "2026-01-22",
-    jam_mulai: "07:30",
-    jam_selesai: "09:30",
+    jam: "07:30–09:30",
     lokasi: "Rumah Pak RT",
   },
   {
@@ -122,7 +125,7 @@ export const JADWAL: JadwalKesehatan[] = [
     dusun: { id: "d8", nama: "Jetis", slug: "jetis" },
     kegiatan: "Imunisasi",
     tanggal: "2026-01-25",
-    jam_mulai: "08:00",
+    jam: "08:00",
     lokasi: "Posyandu Jetis",
   },
 ];

@@ -1,39 +1,43 @@
-export type Dusun = { id: string; nama: string; slug: string };
+// src/features/kesehatan/types.ts
+// Gabungan: tipe content lama + public types (barrel export)
 
-export type Kader = { id: string; dusun: Dusun; nama: string; no_wa: string };
+export type KesehatanStats = Record<string, number>;
 
-export type JadwalKesehatan = {
-  id: string;
-  dusun: Dusun;
-  kegiatan: string;
-  tanggal: string;
-  jam_mulai?: string;
-  jam_selesai?: string;
-  lokasi?: string;
-  catatan?: string;
-};
-
-export type IsuKesehatan = {
-  id: string;
+export type PosyanduBlock = {
   judul: string;
-  ringkas: string;
-  dampak: string[];
-  upayaDesa: string[];
-  aksiWarga: string[];
+  jadwal: string;
+  lokasi: string;
 };
 
-export type StatistikBulanan = {
-  bulan: string;
-  hipertensi: number;
-  stunting: number;
+export type KesehatanPosyandu = {
+  balita?: PosyanduBlock;
+  lansia?: PosyanduBlock;
 };
 
-export type MetaKesehatan = {
-  periode_terakhir: string;
-  sumber: string;
+export type KesehatanKontak = {
+  nama: string;
+  peran: string;
+  no_wa: string;
 };
 
-export type LeafletLink = {
-  label: string;
-  path: string;
+export type KesehatanContent = {
+  id: "main";
+  published: boolean;
+  hero_title: string;
+  hero_desc: string;
+  stats: KesehatanStats;
+  isu: string[];
+  posyandu: KesehatanPosyandu;
+  kontak: KesehatanKontak[];
+  updated_at: string;
 };
+
+// ✅ Re-export public kesehatan types supaya import lama tidak pecah
+export type {
+  MetaKesehatan,
+  LeafletLink,
+  StatistikBulanan,
+  IsuKesehatan,
+  Kader,
+  JadwalKesehatan,
+} from "./public.types";
